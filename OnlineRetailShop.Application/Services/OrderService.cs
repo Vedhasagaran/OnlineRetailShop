@@ -1,12 +1,8 @@
-﻿using OnlineRetailShop.Application.Interfaces;
+﻿using AutoMapper;
+using OnlineRetailShop.Application.Interfaces;
+using OnlineRetailShop.Domain.DTO;
 using OnlineRetailShop.Domain.Interfaces;
-using OnlineRetailShop.Domain.Models;
-using OnlineRetailShop.Infrastructure.Exceptions;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using OnlineRetailShop.Utilities.Exceptions;
 
 namespace OnlineRetailShop.Application.Services
 {
@@ -14,47 +10,51 @@ namespace OnlineRetailShop.Application.Services
     {
         private readonly IOrderRepository _orderRepository;
         private readonly IProductRepository _productRepository;
+        private readonly IMapper _mapper;
 
-        public OrderService(IOrderRepository orderRepository,IProductRepository productRepository)
+        public OrderService(IOrderRepository orderRepository,IProductRepository productRepository,IMapper mapper)
         {
             _orderRepository = orderRepository;
             _productRepository = productRepository;
+            _mapper = mapper;
         }
 
-        public async Task<Order> PlaceOrderAsync(Order order)
+        public async Task<OrderDto> PlaceOrderAsync(AddOrderRequestDto addOrderRequestDto)
         {
-            var product = await _productRepository.GetByIdAsync(order.ProductId);
-            if (product == null || product.Quantity < order.Quantity)
+            var product = await _productRepository.GetByIdAsync(addOrderRequestDto.ProductId);
+            if (product == null || product.Quantity < addOrderRequestDto.Quantity)
             {
                 throw new Exception("Product is unavailable and available quantity is " + product.Quantity);
             }
             
-            product.Quantity -= order.Quantity;
-            await _productRepository.UpdateAsync(product.Id,product);
+            product.Quantity -= addOrderRequestDto.Quantity;
+            var productrequestDto = _mapper.Map<ProductRequestDto>(product);
+            await _productRepository.UpdateAsync(product.Id, productrequestDto);            
 
-            return await _orderRepository.AddAsync(order);
+            return await _orderRepository.AddAsync(addOrderRequestDto);
         }
 
-        public async Task<Order> CancelOrderAsync(Guid orderId)
+        public async Task CancelOrderAsync(Guid orderId)
         {
             var order = await _orderRepository.GetByIdAsync(orderId);
             if (order == null)
             {
-                 throw new NotFoundException("Order not found");
-                //return null;
+                 throw new NotFoundException("Order not found");                
             }
 
             var product = await _productRepository.GetByIdAsync(order.ProductId);
             product.Quantity += order.Quantity;
-            await _productRepository.UpdateAsync(product.Id,product);
+            var productrequestDto = _mapper.Map<ProductRequestDto>(product);
+            await _productRepository.UpdateAsync(product.Id, productrequestDto);           
 
-            await _orderRepository.CancelAsync(orderId);
-            return order;
+            await _orderRepository.CancelAsync(orderId);            
         }
 
-        public async Task<Order> GetOrderByIdAsync(Guid orderId)
+        public async Task<OrderDto> GetOrderByIdAsync(Guid orderId)
         {
-            return await _orderRepository.GetByIdAsync(orderId); 
+            var order = await _orderRepository.GetByIdAsync(orderId); 
+
+            return _mapper.Map<OrderDto>(order);
         }
     }
 }

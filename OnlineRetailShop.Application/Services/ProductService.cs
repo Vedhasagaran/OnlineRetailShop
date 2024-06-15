@@ -1,46 +1,43 @@
 ﻿using OnlineRetailShop.Application.Interfaces;
+using OnlineRetailShop.Domain.DTO;
 using OnlineRetailShop.Domain.Interfaces;
-using OnlineRetailShop.Domain.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace OnlineRetailShop.Application.Services
 {
     public class ProductService : IProductService
     {
-        private readonly IProductRepository _productRepository;
+        private readonly IProductRepository _productRepository;        
 
         public ProductService(IProductRepository productRepository)
         {
-            _productRepository = productRepository;
-        }        
-
-        public async Task<Product> AddProductAsync(Product product)
-        {
-            return await _productRepository.AddAsync(product);
+            _productRepository = productRepository;         
         }
 
-        public async Task<Product?> DeleteProductAsync(Guid id)
-        {
-            return await _productRepository.DeleteAsync(id);
-        }
+        
 
-        public async Task<IEnumerable<Product>> GetAll()
+        public async Task<IEnumerable<ProductDto>> GetAll()
         {
             return await _productRepository.GetAll();
         }
 
-        public async Task<Product?> GetProductByIdAsync(Guid id)
+        public async Task<ProductDto?> GetProductByIdAsync(Guid id)
         {
             return await _productRepository.GetByIdAsync(id);
         }
 
-        public async Task<Product?> UpdateProductAsync(Guid id, Product product)
+        public async Task<ProductDto> AddProductAsync(ProductRequestDto productRequestDto)
         {
-            return await _productRepository.UpdateAsync(id,product);
+            return await _productRepository.AddAsync(productRequestDto);
+        }
+
+        public async Task<ProductDto?> UpdateProductAsync(Guid id, ProductRequestDto productRequestDto)
+        {
+            return await _productRepository.UpdateAsync(id, productRequestDto);
+        }
+
+        public async Task DeleteProductAsync(Guid id)
+        {
+            await _productRepository.DeleteAsync(id);
         }
     }
 }

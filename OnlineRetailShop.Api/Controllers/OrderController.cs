@@ -1,10 +1,8 @@
 ﻿using AutoMapper;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using OnlineRetailShop.Application.Interfaces;
-using OnlineRetailShop.Domain.CustomValidation;
+using OnlineRetailShop.Utilities.CustomValidation;
 using OnlineRetailShop.Domain.DTO;
-using OnlineRetailShop.Domain.Models;
 
 namespace OnlineRetailShop.Api.Controllers
 {
@@ -15,7 +13,7 @@ namespace OnlineRetailShop.Api.Controllers
         private readonly IOrderService _orderService;
         private readonly IMapper _mapper;
 
-        public OrderController(IOrderService orderService,IMapper mapper)
+        public OrderController(IOrderService orderService, IMapper mapper)
         {
             _orderService = orderService;
             _mapper = mapper;
@@ -32,11 +30,8 @@ namespace OnlineRetailShop.Api.Controllers
             {
                 return NotFound();
             }
-
-            var orderDto = _mapper.Map<OrderDto>(order);
-
-            return Ok(orderDto);
-
+            
+            return Ok(order);
         }
 
         //POST: Add order to the database
@@ -44,9 +39,8 @@ namespace OnlineRetailShop.Api.Controllers
         [ValidateModel]
         public async Task<IActionResult> PlaceOrder(AddOrderRequestDto addOrderRequestDto)
         {
-            var order = _mapper.Map<Order>(addOrderRequestDto);
-            var orderCreated = await _orderService.PlaceOrderAsync(order);
-           // return Ok(orderCreated);
+            var orderCreated = await _orderService.PlaceOrderAsync(addOrderRequestDto);
+           
             return CreatedAtAction(nameof(GetOrderById), new { id = orderCreated.Id }, orderCreated);
         }
 
@@ -56,8 +50,9 @@ namespace OnlineRetailShop.Api.Controllers
         [Route("{id:Guid}")]
         public async Task<IActionResult> CancelOrder([FromRoute] Guid id)
         {
-            var order = await _orderService.CancelOrderAsync(id);            
-            return Ok(order);
+            await _orderService.CancelOrderAsync(id);    
+            
+            return NoContent();
         }
     }
 }

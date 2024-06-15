@@ -1,20 +1,13 @@
-﻿using OnlineRetailShop.Domain.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using OnlineRetailShop.Domain.DTO;
 
 namespace OnlineRetailShop.Application.Interfaces
 {
     public interface IOrderService
     {
-        Task<Order> PlaceOrderAsync(Order order);
+        Task<OrderDto> PlaceOrderAsync(AddOrderRequestDto addOrderRequestDto);
 
-        Task<Order> CancelOrderAsync(Guid orderId);
+        Task CancelOrderAsync(Guid orderId);
 
-        Task<Order> GetOrderByIdAsync(Guid orderId);
-
-
+        Task<OrderDto> GetOrderByIdAsync(Guid orderId);
     }
 }
