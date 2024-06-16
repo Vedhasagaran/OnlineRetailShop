@@ -8,20 +8,61 @@ namespace OnlineRetailShop.Infrastructure.Data
         public OnlineRetailShopDbContext(DbContextOptions<OnlineRetailShopDbContext> options)
             : base(options)
         {
-                
+
         }
 
-        public DbSet<Product> Products { get; set; }
-        public DbSet<Order> Orders { get; set; }
+        public virtual DbSet<Product> Products { get; set; }
+        public virtual DbSet<Order> Orders { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            /*modelBuilder.Entity<Product>()
-               .Property(p => p.Price)
-               .HasColumnType("decimal(18,2)");*/
 
+            base.OnModelCreating(modelBuilder);
 
-            base.OnModelCreating(modelBuilder);           
+            //Seed Data for Products
+            var products = new List<Product>()
+            {
+                new() 
+                {
+                    Id = Guid.Parse("f974bc9e-fbee-4704-baf4-0c175ba56381"),
+                    Name = "Appple",
+                    Price = 1200m,
+                    Quantity = 100
+                },
+                new() 
+                {
+                    Id = Guid.Parse("5ee17da1-281a-48de-a16d-b6d8d25c64bf"),
+                    Name = "Orange",
+                    Price = 200m,
+                    Quantity = 200
+                }
+            };
+
+            //Seed Products into Database
+            modelBuilder.Entity<Product>().HasData(products);
+
+            //Seed Data for Orders
+            var orders = new List<Order>()
+            {
+                new()
+                {
+                    Id = Guid.NewGuid(),
+                    ProductId = new Guid("f974bc9e-fbee-4704-baf4-0c175ba56381"), // Ensure this matches a Product Id
+                    Quantity = 10,
+                    OrderDate = DateTime.Now
+                },
+                new()
+                {
+                    Id = Guid.NewGuid(),
+                    ProductId = new Guid("5ee17da1-281a-48de-a16d-b6d8d25c64bf"), // Ensure this matches a Product Id
+                    Quantity = 20,
+                    OrderDate = DateTime.Now
+                }
+            };
+
+            //Seed Orders to Database
+            modelBuilder.Entity<Order>().HasData(orders);
+
         }
     }
 }
