@@ -19,7 +19,9 @@
 
   <ItemGroup>
     <ProjectReference Include="..\OnlineRetailShop.Application\OnlineRetailShop.Application.csproj" />
+    <ProjectReference Include="..\OnlineRetailShop.Infrastructure.Tests\OnlineRetailShop.Infrastructure.Tests.csproj" />
     <ProjectReference Include="..\OnlineRetailShop.Infrastructure\OnlineRetailShop.Infrastructure.csproj" />
+    <ProjectReference Include="..\OnlineRetailShop.Utilities\OnlineRetailShop.Utilities.csproj" />
   </ItemGroup>
 
 </Project>

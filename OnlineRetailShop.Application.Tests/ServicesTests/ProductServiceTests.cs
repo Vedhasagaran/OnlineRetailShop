@@ -1,8 +1,7 @@
 ﻿using Moq;
 using OnlineRetailShop.Application.Services;
+using OnlineRetailShop.Domain.DTO;
 using OnlineRetailShop.Domain.Interfaces;
-using OnlineRetailShop.Domain.Models;
-using OnlineRetailShop.Infrastructure.Repositories;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -23,103 +22,116 @@ namespace OnlineRetailShop.Application.Tests.ServicesTests
         }
 
         [Fact]
-        public async Task GetAll_ReturnsListOfProducts()
+        public async Task GetAll_ShouldReturnAllProducts()
         {
             // Arrange
-            var products = new List<Product>
-        {
-            new Product { Id = Guid.NewGuid(), Name = "Product 1", Price = 10.99m, Quantity = 5 },
-            new Product { Id = Guid.NewGuid(), Name = "Product 2", Price = 19.99m, Quantity = 10 }
-        };
-            _mockProductRepository.Setup(x => x.GetAll()).ReturnsAsync(products);
+            var products = new List<ProductDto>
+            {
+                new ProductDto { Id = Guid.NewGuid(), Name = "Product 1", Price = 10, Quantity = 1 },
+                new ProductDto { Id = Guid.NewGuid(), Name = "Product 2", Price = 20, Quantity = 2 }
+            };
+
+            _mockProductRepository.Setup(repo => repo.GetAll()).ReturnsAsync(products);
 
             // Act
             var result = await _productService.GetAll();
 
             // Assert
+            Assert.Equal(products.Count, result.Count());
             Assert.Equal(products, result);
         }
 
         [Fact]
-        public async Task AddProductAsync_AddsProductToRepository()
-        {
-            // Arrange
-            var product = new Product
-            {
-                Id = Guid.NewGuid(),
-                Name = "Test Product",
-                Price = 9.99m,
-                Quantity = 10
-            };
-            _mockProductRepository.Setup(x => x.AddAsync(product)).ReturnsAsync(product);
-
-            // Act
-            var result = await _productService.AddProductAsync(product);
-
-            // Assert
-            Assert.Equal(product, result);
-        }
-        [Fact]
-        public async Task GetProductByIdAsync_ReturnsProduct()
+        public async Task GetProductByIdAsync_ShouldReturnProduct_WhenProductExists()
         {
             // Arrange
             var productId = Guid.NewGuid();
-            var product = new Product
-            {
-                Id = productId,
-                Name = "Test Product",
-                Price = 9.99m,
-                Quantity = 10
-            };
-            _mockProductRepository.Setup(x => x.GetByIdAsync(productId)).ReturnsAsync(product);
+            var product = new ProductDto { Id = productId, Name = "Product 1", Price = 10, Quantity = 1 };
+
+            _mockProductRepository.Setup(repo => repo.GetByIdAsync(productId)).ReturnsAsync(product);
 
             // Act
             var result = await _productService.GetProductByIdAsync(productId);
 
             // Assert
-            Assert.Equal(product, result);
+            Assert.NotNull(result);
+            Assert.Equal(productId, result.Id);
         }
 
         [Fact]
-        public async Task UpdateProductAsync_ReturnsUpdatedProduct()
+        public async Task GetProductByIdAsync_ShouldReturnNull_WhenProductDoesNotExist()
         {
             // Arrange
-            var productId = Guid.NewGuid();
-            var updatedProduct = new Product
-            {
-                Id = productId,
-                Name = "Updated Product",
-                Price = 14.99m,
-                Quantity = 20
-            };
-            _mockProductRepository.Setup(x => x.UpdateAsync(productId, updatedProduct)).ReturnsAsync(updatedProduct);
+            _mockProductRepository.Setup(repo => repo.GetByIdAsync(It.IsAny<Guid>())).ReturnsAsync((ProductDto)null);
 
             // Act
-            var result = await _productService.UpdateProductAsync(productId, updatedProduct);
+            var result = await _productService.GetProductByIdAsync(Guid.NewGuid());
 
             // Assert
-            Assert.Equal(updatedProduct, result);
+            Assert.Null(result);
         }
 
         [Fact]
-        public async Task DeleteProductAsync_ReturnsDeletedProduct()
+        public async Task AddProductAsync_ShouldAddProduct()
+        {
+            // Arrange
+            var productRequestDto = new ProductRequestDto { Name = "New Product", Price = 30, Quantity = 5 };
+            var addedProduct = new ProductDto { Id = Guid.NewGuid(), Name = productRequestDto.Name, Price = productRequestDto.Price, Quantity = productRequestDto.Quantity };
+
+            _mockProductRepository.Setup(repo => repo.AddAsync(productRequestDto)).ReturnsAsync(addedProduct);
+
+            // Act
+            var result = await _productService.AddProductAsync(productRequestDto);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.Equal(addedProduct.Id, result.Id);
+            Assert.Equal(addedProduct.Name, result.Name);
+        }
+
+        [Fact]
+        public async Task UpdateProductAsync_ShouldUpdateProduct()
         {
             // Arrange
             var productId = Guid.NewGuid();
-            var deletedProduct = new Product
-            {
-                Id = productId,
-                Name = "Deleted Product",
-                Price = 9.99m,
-                Quantity = 10
-            };
-            _mockProductRepository.Setup(x => x.DeleteAsync(productId)).ReturnsAsync(deletedProduct);
+            var productRequestDto = new ProductRequestDto { Name = "Updated Product", Price = 40, Quantity = 10 };
+            var updatedProduct = new ProductDto { Id = productId, Name = productRequestDto.Name, Price = productRequestDto.Price, Quantity = productRequestDto.Quantity };
+
+            _mockProductRepository.Setup(repo => repo.UpdateAsync(productId, productRequestDto)).ReturnsAsync(updatedProduct);
 
             // Act
-            var result = await _productService.DeleteProductAsync(productId);
+            var result = await _productService.UpdateProductAsync(productId, productRequestDto);
 
             // Assert
-            Assert.Equal(deletedProduct, result);
+            Assert.NotNull(result);
+            Assert.Equal(updatedProduct.Id, result.Id);
+            Assert.Equal(updatedProduct.Name, result.Name);
+        }
+
+        [Fact]
+        public async Task UpdateProductAsync_ShouldReturnNull_WhenProductDoesNotExist()
+        {
+            // Arrange
+            _mockProductRepository.Setup(repo => repo.UpdateAsync(It.IsAny<Guid>(), It.IsAny<ProductRequestDto>())).ReturnsAsync((ProductDto)null);
+
+            // Act
+            var result = await _productService.UpdateProductAsync(Guid.NewGuid(), new ProductRequestDto());
+
+            // Assert
+            Assert.Null(result);
+        }
+
+        [Fact]
+        public async Task DeleteProductAsync_ShouldCallDeleteOnRepository()
+        {
+            // Arrange
+            var productId = Guid.NewGuid();
+
+            // Act
+            await _productService.DeleteProductAsync(productId);
+
+            // Assert
+            _mockProductRepository.Verify(repo => repo.DeleteAsync(productId), Times.Once);
         }
     }
 }

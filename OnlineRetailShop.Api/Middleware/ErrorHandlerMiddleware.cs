@@ -1,9 +1,6 @@
-﻿using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Http;
-using OnlineRetailShop.Infrastructure.Exceptions;
+﻿using OnlineRetailShop.Utilities.Exceptions;
 using System.ComponentModel.DataAnnotations;
 using System.Net;
-using System.Threading.Tasks;
 
 namespace OnlineRetailShop.Api.Middleware
 {

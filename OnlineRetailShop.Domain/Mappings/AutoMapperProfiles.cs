@@ -1,11 +1,6 @@
 ﻿using AutoMapper;
 using OnlineRetailShop.Domain.DTO;
 using OnlineRetailShop.Domain.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace OnlineRetailShop.Domain.Mappings
 {
@@ -15,7 +10,9 @@ namespace OnlineRetailShop.Domain.Mappings
         {
             CreateMap<Product, ProductDto>().ReverseMap();
             CreateMap<ProductRequestDto, Product>().ReverseMap();
+            CreateMap<ProductRequestDto, ProductDto>().ReverseMap();
             CreateMap<AddOrderRequestDto, Order>().ReverseMap();
+            CreateMap<AddOrderRequestDto, OrderDto>().ReverseMap();
             CreateMap<OrderDto, Order>().ReverseMap();
         }
     }
